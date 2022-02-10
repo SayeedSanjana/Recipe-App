@@ -2,46 +2,59 @@
   <div class="home">
    <h1>My Recipes</h1>
    <button @click="togglePopup">Add new Recipe</button>
+
+   <!-- show list of recipes starts here -->
    <div class="recipes">
-     <!-- Recipes will go here -->
+     <div class="card" v-for="recipe in $store.state.recipes" :key="recipe.slug">
+       <h2>{{recipe.title}}</h2>
+       <p>{{recipe.description}}</p>
+       <router-link :to="`/recipe/${recipe.slug}`">
+       <button>View Recipe</button>
+       </router-link>
+     </div>    
    </div>
+   <!-- show list of recipes ends here -->
+
+   <!-- Add recipe to the list starts here -->
    <div class="add-recipe-popup" v-if="popupOpen">
      <div class="popup-content">
        <h2>Add new recipe</h2>
        <form @submit.prevent>
          <div class="group">
            <label>Tilte</label>
-           <input type="text" />
+           <input type="text" v-model="newRecipe.title" />
          </div>
           <div class="group">
            <label>Description</label>
-           <textarea></textarea>
+           <textarea  v-model="newRecipe.description"></textarea>
          </div>
          <div class="group">
            <label>Ingredients</label>
-           <div class="ingredient">
-             <input type="text"/>
+           <div class="ingredient" v-for="i in newRecipe.ingredientRows" :key="i">
+             <input type="text" v-model="newRecipe.ingredients[i-1]"/>
            </div>
-           <button type="button">Add Ingredient</button>
+           <button type="button" @click="addNewIngredient">Add Ingredient</button>
          </div>
           <div class="group">
            <label>Method</label>
-           <div class="method">
-             <textarea></textarea>
+           <div class="method" v-for="i in newRecipe.methodRows" :key="i">
+             <textarea v-model="newRecipe.method[i-1]"></textarea>
            </div>
-           <button type="button">Add step</button>
+           <button type="button"  @click="addNewStep">Add step</button>
          </div>
-         <button type="submit">Add Recipe</button>
+         <button type="submit" @click="addNewRecipe">Add Recipe</button>
          <button type="button"  @click="togglePopup">Close</button>
        </form>
-
      </div>
    </div>
+   <!-- Add recipes to the list ends here -->
+
   </div>
 </template>
 
 <script>
 import { ref } from "vue";
+import {useStore} from "vuex";
 // @ is an alias to /src
 export default {
   name: 'Home',
@@ -55,14 +68,40 @@ export default {
         methodRows:1
     });
     const popupOpen=ref(false);
+    const store=useStore();
     const togglePopup=()=>{
       popupOpen.value=!popupOpen.value
     }
-
+    const addNewIngredient=()=>{
+      newRecipe.value.ingredientRows++
+    }
+    const addNewStep=()=>{
+      newRecipe.value.methodRows++
+    }
+    const addNewRecipe=()=>{
+      newRecipe.value.slug=newRecipe.value.title.toLowerCase().replace(/\s/g,'-');
+      if(newRecipe.value.slug==''){
+        alert("Please enter a title");
+        return;
+      }
+      store.commit('ADD_RECIPE',{...newRecipe.value});
+      newRecipe.value={
+        title:'',
+        description:'',
+        ingredients:[],
+        method:[],
+        ingredientRows:1,
+        methodRows:1
+    };
+    togglePopup();
+    }
     return{
       newRecipe,
+      popupOpen,
       togglePopup,
-      popupOpen
+      addNewStep,
+      addNewIngredient,
+      addNewRecipe
     }
   }
   
