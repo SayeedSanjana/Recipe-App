@@ -1,5 +1,7 @@
 <template>
-    <div >
+    <div class="recipe">
+        <router-link to="/">&lt;</router-link>
+        <h1>Title here</h1>
 
     </div>
 </template>
